@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: java-database-migration-optimizer
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+server:
+  port: ${SERVER_PORT:8080}
+app:
+  datasource:
+    source:
+      url: ${SOURCE_DB_URL:jdbc:h2:mem:source;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE}
+      username: ${SOURCE_DB_USERNAME:sa}
+      password: ${SOURCE_DB_PASSWORD:}
+      driver-class-name: ${SOURCE_DB_DRIVER:org.h2.Driver}
+    target:
+      url: ${TARGET_DB_URL:jdbc:h2:mem:target;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE}
+      username: ${TARGET_DB_USERNAME:sa}
+      password: ${TARGET_DB_PASSWORD:}
+      driver-class-name: ${TARGET_DB_DRIVER:org.h2.Driver}
+  demo:
+    customers: ${DEMO_CUSTOMERS:250}
+    orders: ${DEMO_ORDERS:5000}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

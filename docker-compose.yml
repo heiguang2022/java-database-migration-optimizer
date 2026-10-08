@@ -1,0 +1,43 @@
+services:
+  source-db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: legacy
+      MYSQL_USER: migration
+      MYSQL_PASSWORD: migration
+      MYSQL_ROOT_PASSWORD: root
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -proot --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    ports: ["3307:3306"]
+
+  target-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: modern
+      POSTGRES_USER: migration
+      POSTGRES_PASSWORD: migration
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U migration -d modern"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    ports: ["5433:5432"]
+
+  app:
+    build: .
+    depends_on:
+      source-db: {condition: service_healthy}
+      target-db: {condition: service_healthy}
+    environment:
+      SOURCE_DB_URL: jdbc:mysql://source-db:3306/legacy?allowPublicKeyRetrieval=true&useSSL=false
+      SOURCE_DB_USERNAME: migration
+      SOURCE_DB_PASSWORD: migration
+      SOURCE_DB_DRIVER: com.mysql.cj.jdbc.Driver
+      TARGET_DB_URL: jdbc:postgresql://target-db:5432/modern
+      TARGET_DB_USERNAME: migration
+      TARGET_DB_PASSWORD: migration
+      TARGET_DB_DRIVER: org.postgresql.Driver
+    ports: ["8080:8080"]
